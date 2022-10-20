@@ -1,0 +1,6 @@
+{
+  "Address" : "0.0.0.0:7779",
+  "ReadTimeout" : 5,
+  "WriteTimeout" : 5,
+  "Static" : "public"
+}
