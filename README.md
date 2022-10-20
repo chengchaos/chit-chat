@@ -153,4 +153,35 @@ Merge made by the 'ort' strategy.
  1 file changed, 25 insertions(+)
  create mode 100644 LICENSE
 
+$ git status
+位于分支 master
+您的分支领先 'origin/main' 共 3 个提交。
+  （使用 "git push" 来发布您的本地提交）
+
+无文件要提交，干净的工作区
+$ git push
+fatal: 您当前分支的上游分支和您当前分支名不匹配，为推送到远程的上游分支，
+使用
+
+    git push origin HEAD:main
+
+为推送至远程同名分支，使用
+
+    git push origin HEAD
+
+为了永久地选择任一选项，参见 'git help config' 中的 push.default。
+
+为了避免在与本地分支名字不匹配时自动设置上游分支，参见 'git help config'
+中 branch.autoSetupMerge 的 'simple' 选项。
+
+$ git push origin HEAD:main
+枚举对象中: 16, 完成.
+对象计数中: 100% (16/16), 完成.
+使用 8 个线程进行压缩
+压缩对象中: 100% (11/11), 完成.
+写入对象中: 100% (15/15), 3.97 KiB | 3.97 MiB/s, 完成.
+总共 15（差异 2），复用 0（差异 0），包复用 0
+remote: Resolving deltas: 100% (2/2), done.
+To github.com:chengchaos/chit-chat.git
+   d7574ba..f973382  HEAD -> main
 ```
