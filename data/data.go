@@ -81,7 +81,7 @@ func Check(session *utils.Session) (valid bool, err error) {
 	return
 }
 
-func DeleteSessionByUUID(session *utils.Session) (err error) {
+func DeleteSession(session *utils.Session) (err error) {
 	statement := "DELETE FROM sessions WHERE uuid = $1"
 	stmt, err := Db.Prepare(statement)
 	if err != nil {

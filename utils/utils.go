@@ -29,12 +29,21 @@ type Session struct {
 }
 
 var Config *Configuration
-var logger *log.Logger
+var Logger *log.Logger
 
 // P <br />
 // Convenience function for printing to stdout
 func P(a ...interface{}) {
 	fmt.Println(a)
+}
+
+func initLog() {
+	//file, err := os.OpenFile("chitchat.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	//if err != nil {
+	//	log.Fatalln("Failed to open log file", err)
+	//}
+	//Logger = log.New(file, "INFO", log.Ldate|log.Ltime|log.Lshortfile)
+	Logger = log.New(os.Stdout, "INFO", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func initConfig() {
@@ -49,14 +58,6 @@ func initConfig() {
 	if err != nil {
 		log.Fatalln("Cannot get configuration from file", err)
 	}
-}
-
-func initLog() {
-	file, err := os.OpenFile("chitchat.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalln("Failed to open log file", err)
-	}
-	logger = log.New(file, "INFO", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
 func ParseTemplateFiles(filenames ...string) (t *template.Template) {
@@ -88,18 +89,18 @@ func ErrorMessage(w http.ResponseWriter, r *http.Request, msg string) {
 
 // for logging
 func LogInfo(args ...interface{}) {
-	logger.SetPrefix("INFO ")
-	logger.Println(args...)
+	Logger.SetPrefix("INFO ")
+	Logger.Println(args...)
 }
 
 func LogError(args ...interface{}) {
-	logger.SetPrefix("ERROR ")
-	logger.Println(args...)
+	Logger.SetPrefix("ERROR ")
+	Logger.Println(args...)
 }
 
 func LogWarning(args ...interface{}) {
-	logger.SetPrefix("WARNING ")
-	logger.Println(args...)
+	Logger.SetPrefix("WARNING ")
+	Logger.Println(args...)
 }
 
 func Version() string {

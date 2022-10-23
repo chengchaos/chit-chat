@@ -9,6 +9,8 @@ import (
 	"github.com/chengchaos/chit-chat/ctrl"
 )
 
+var logger = utils.Logger
+
 func main() {
 	config := utils.Config
 	utils.P("Chitchat", utils.Version(), "started at", config.Address)
@@ -32,7 +34,7 @@ func main() {
 	// defined in route_auth.go
 	mux.HandleFunc("/login", ctrl.Login)
 	mux.HandleFunc("/signup", ctrl.Signup)
-	mux.HandleFunc("/signupaccount", ctrl.SignupAccount)
+	mux.HandleFunc("/signup_account", ctrl.SignupAccount)
 	mux.HandleFunc("/logout", ctrl.Logout)
 	mux.HandleFunc("/authenticate", ctrl.Authenticate)
 
@@ -50,5 +52,10 @@ func main() {
 		WriteTimeout:   time.Duration(config.WriteTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
 	}
-	server.ListenAndServe()
+
+	logger.Println("starting ...")
+	err := server.ListenAndServe()
+	if err != nil {
+		logger.Println("Server is Closed!", err.Error())
+	}
 }

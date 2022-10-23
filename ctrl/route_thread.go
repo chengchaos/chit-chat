@@ -33,7 +33,7 @@ func CreateThread(w http.ResponseWriter, r *http.Request) {
 			utils.LogError(err, "Cannot get user from session")
 		}
 		topic := r.PostFormValue("topic")
-		if _, err := user.CreateThread(topic); err != nil {
+		if _, err := data.CreateThread(&user, topic); err != nil {
 			utils.LogError(err, "Cannot create thread")
 		}
 		http.Redirect(w, r, "/", 302)

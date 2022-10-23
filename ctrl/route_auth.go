@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/chengchaos/chit-chat/data"
@@ -36,7 +37,7 @@ func SignupAccount(w http.ResponseWriter, r *http.Request) {
 		Password: r.PostFormValue("password"),
 	}
 	if err := user.Create(); err != nil {
-		utils.LogError(err, "Cannout create user")
+		log.Println(err, "Cannot create user")
 	}
 	http.Redirect(w, r, "/login", 302)
 }
@@ -69,7 +70,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	if err != http.ErrNoCookie {
 		utils.LogWarning(err, "Failed to get cookie")
 		session := utils.Session{Uuid: cookie.Value}
-		data.DeleteSessionByUUID(&session)
+		data.DeleteSession(&session)
 	}
 	http.Redirect(w, r, "/", 302)
 }

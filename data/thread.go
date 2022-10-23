@@ -2,11 +2,12 @@ package data
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/chengchaos/chit-chat/utils"
 )
+
+var logger = utils.Logger
 
 type Thread struct {
 	Id        int
@@ -28,7 +29,12 @@ func (thread *Thread) NumReplies() (count int) {
 	if err != nil {
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			utils.LogError(err)
+		}
+	}(rows)
 	for rows.Next() {
 		if err = rows.Scan(&count); err != nil {
 			return
@@ -94,14 +100,19 @@ func CreateThread(user *User, topic string) (conv Thread, err error) {
 }
 
 func Threads() (threads []Thread, err error) {
-	sql := "SELECT a.id, a.user_id, a.uuid, a.topic, a.created_at " +
+	statement := "SELECT a.id, a.user_id, a.uuid, a.topic, a.created_at " +
 		"FROM threads a ORDER BY a.created_at DESC "
-	rows, err := Db.Query(sql)
+	rows, err := Db.Query(statement)
 	if err != nil {
 		utils.LogError(err, "Threads Db Query")
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			utils.LogError(err, "rows close get error!")
+		}
+	}(rows)
 	for rows.Next() {
 		thread := Thread{}
 		err = rows.Scan(&thread.Id, &thread.UserId, &thread.Uuid, &thread.Topic, &thread.CreatedAt)
@@ -110,7 +121,7 @@ func Threads() (threads []Thread, err error) {
 			utils.LogError(err, "Threads rows Scan ")
 			return
 		}
-		fmt.Printf("Threads : %v\n", thread)
+		logger.Printf("Threads : %v\n", thread)
 		threads = append(threads, thread)
 	}
 	return

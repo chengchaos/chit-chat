@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -41,12 +42,17 @@ func (user *User) Create() (err error) {
 	// Postgres does not automatically return the last insert id, because it would be wrong to assume
 	// you're always using a sequence.You need to use the RETURNING keyword in your insert to get this
 	// information from postgres.
-	statement := "INSERT INTO users (uuid, name, email, password, created_at) VALUES ($1, $2, $3, $4, $5)"
+	statement := "INSERT INTO users (uuid, name, email, password, created_at) VALUES ($1, $2, $3, $4, $5) " +
+		"returning id, uuid, created_at "
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
 		return
 	}
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		if err := stmt.Close(); err != nil {
+			utils.LogError(err)
+		}
+	}(stmt)
 	// use QueryRow to return a row and scan the returned id into the User struct
 	row := stmt.QueryRow(CreateUUID(), user.Name, user.Email,
 		Encrypt(user.Password), time.Now())
@@ -81,7 +87,12 @@ func (user *User) CreatePost(conv Thread, body string) (post Post, err error) {
 	if err != nil {
 		return
 	}
-	defer stmt.Close()
+	defer func(stmt *sql.Stmt) {
+		err := stmt.Close()
+		if err != nil {
+			utils.Logger.Println("Close statement ", err)
+		}
+	}(stmt)
 	// use QueryRow to return a row and scan the returned id into the Session struct
 	err = stmt.QueryRow(CreateUUID(), body, user.Id, conv.Id, time.Now()).Scan(&post.Id, &post.Uuid, &post.Body, &post.UserId, &post.ThreadId, &post.CreatedAt)
 	return
@@ -89,7 +100,6 @@ func (user *User) CreatePost(conv Thread, body string) (post Post, err error) {
 
 // Get a single user given the email
 func UserByEmail(email string) (user User, err error) {
-	user = User{}
 	err = Db.QueryRow("SELECT id, uuid, name, email, password, created_at "+
 		"FROM users WHERE email = $1", email).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
