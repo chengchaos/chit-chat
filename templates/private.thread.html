@@ -8,15 +8,15 @@
     </div>
 
   </div>
-  
+
   {{ range .Posts }}
   <div class="panel-body">
-    <span class="lead"> <i class="fa fa-comment"></i> {{ .Body }}</span>
+    <span class="lead"> <i class="fa fa-comment"></i>{{ .Body }}</span>
     <div class="pull-right">
       {{ .User.Name }} - {{ .CreatedAtDate }}
-    </div>    
+    </div>
   </div>
-  {{ end }}    
+  {{ end }}
 
 </div>
 

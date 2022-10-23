@@ -16,7 +16,8 @@ func (post *Post) CreatedAtDate() string {
 }
 
 func (post *Post) Save() (err error) {
-	statement := "INSERT INTO posts (uuid, body, user_id, thread_id , created_at) values ($1, $2, $3, $4, $5)"
+	statement := "INSERT INTO posts (uuid, body, user_id, thread_id , created_at) values ($1, $2, $3, $4, $5) " +
+		"returning id, created_at "
 	stmt, err := Db.Prepare(statement)
 	if err != nil {
 		return

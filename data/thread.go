@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -13,7 +14,6 @@ type Thread struct {
 	Uuid      string
 	Topic     string
 	CreatedAt time.Time
-	User      User
 }
 
 // CreatedAtDate is method that format the CreatedAt date to display nicely on the screen
@@ -23,7 +23,8 @@ func (thread *Thread) CreatedAtDate() string {
 
 func (thread *Thread) NumReplies() (count int) {
 	rows, err := Db.Query(
-		"SELECT count(*) FROM posts WHERE thread_id = $1", thread.Id)
+		"SELECT count(id) FROM posts "+
+			"WHERE thread_id = $1", thread.Id)
 	if err != nil {
 		return
 	}
@@ -42,14 +43,48 @@ func (thread *Thread) Posts() (posts []Post, err error) {
 	if err != nil {
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		if err := rows.Close(); err != nil {
+			utils.LogError(err, "Close rows get errors!")
+		}
+	}(rows)
 
 	for rows.Next() {
 		post := Post{}
-		if err = rows.Scan(&post.Id, &post.UserId, &post.ThreadId, &post.Uuid, &post.Body, &post.CreatedAt); err != nil {
+		if err = rows.Scan(
+			&post.Id,
+			&post.UserId,
+			&post.ThreadId,
+			&post.Uuid,
+			&post.Body,
+			&post.CreatedAt); err != nil {
 			return
 		}
 		posts = append(posts, post)
+	}
+	return
+}
+
+// User Get the user who started this thread
+func (thread *Thread) User() (user User) {
+	user = User{}
+	err := Db.QueryRow("SELECT id, uuid, name, email, created_at "+
+		"FROM users WHERE id = $1", thread.UserId).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
+	if err != nil {
+		utils.LogError(err, "What the fuck can I do ?")
+	}
+	return
+}
+
+// User Get the user who wrote the post
+func (post *Post) User() (user User) {
+	user = User{}
+	err := Db.QueryRow("SELECT id, uuid, name, email, created_at "+
+		"FROM users WHERE id = $1", post.UserId).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
+	if err != nil {
+		utils.LogError(err, "What the fuck can I do?")
 	}
 	return
 }
@@ -59,11 +94,8 @@ func CreateThread(user *User, topic string) (conv Thread, err error) {
 }
 
 func Threads() (threads []Thread, err error) {
-	sql := "SELECT a.id, a.user_id, a.uuid, a.topic, a.created_at, b.name " +
-		"FROM threads a, users b " +
-		"WHERE a.user_id = b.id " +
-		"ORDER BY a.created_at DESC "
-	fmt.Println("sql => ", sql)
+	sql := "SELECT a.id, a.user_id, a.uuid, a.topic, a.created_at " +
+		"FROM threads a ORDER BY a.created_at DESC "
 	rows, err := Db.Query(sql)
 	if err != nil {
 		utils.LogError(err, "Threads Db Query")
@@ -72,8 +104,8 @@ func Threads() (threads []Thread, err error) {
 	defer rows.Close()
 	for rows.Next() {
 		thread := Thread{}
-		err = rows.Scan(&thread.Id, &thread.UserId, &thread.Uuid, &thread.Topic, &thread.CreatedAt,
-			&thread.User.Name)
+		err = rows.Scan(&thread.Id, &thread.UserId, &thread.Uuid, &thread.Topic, &thread.CreatedAt)
+
 		if err != nil {
 			utils.LogError(err, "Threads rows Scan ")
 			return
@@ -87,9 +119,8 @@ func Threads() (threads []Thread, err error) {
 // ThreadByUUID Get a thread by the UUID
 func ThreadByUUID(uuid string) (conv Thread, err error) {
 	conv = Thread{}
-	err = Db.QueryRow("SELECT a.id, a.uuid, a.topic, a.user_id, a.created_at, b.name "+
-		"FROM threads a, users b WHERE a.user_id = b.id "+
-		"AND a.uuid = $1", uuid).
-		Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt, &conv.User.Name)
+	err = Db.QueryRow("SELECT a.id, a.uuid, a.topic, a.user_id, a.created_at "+
+		"FROM threads a WHERE a.uuid = $1", uuid).
+		Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
 	return
 }
