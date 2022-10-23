@@ -185,3 +185,43 @@ remote: Resolving deltas: 100% (2/2), done.
 To github.com:chengchaos/chit-chat.git
    d7574ba..f973382  HEAD -> main
 ```
+
+
+## PostgreSQL Install
+
+默认情况下， Postgres 会创建一个名为 postgres 的用户， 并将其用于连接服务器。 为了操作方便，也可以使用自己的名字创建一个 Postgres 账号。要做到这一点，首先要登录 POstgres 账号：
+
+```shell
+zypper install postgresql14-server postgresql14 
+zypper install postgresql-contrib
+systemctl start postgresql
+sudo su - postgres
+createuser --interactive
+Enter name of role to add: chengchao
+Shall the new role be a superuser? (y/n) y
+createdb chengchao
+```
+
+### 设置密码
+
+```shell
+su - postgres
+psql
+alter role chengchao with password 'Hello-Eko!';
+\q 
+pwd
+/var/lib/pgsql
+cd data
+cp pg_hba.conf pg_hba.conf.bk
+vim pg_hba.conf
+
+
+local   all             all                                     md5
+# IPv4 local connections:
+#host    all             all             127.0.0.1/32            ident
+host    all             all             172.16.25.166/20            md5
+
+systemctl restart  postgresql.service 
+
+Hello-Eko!
+```

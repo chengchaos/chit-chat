@@ -3,10 +3,15 @@ package main
 import (
 	"net/http"
 	"time"
+
+	"github.com/chengchaos/chit-chat/utils"
+
+	"github.com/chengchaos/chit-chat/ctrl"
 )
 
 func main() {
-	p("Chitchat", version(), "started at", config.Address)
+	config := utils.Config
+	utils.P("Chitchat", utils.Version(), "started at", config.Address)
 
 	// handle static assets
 	mux := http.NewServeMux()
@@ -19,22 +24,23 @@ func main() {
 	//
 
 	// index
-	//mux.HandleFunc("/", index)
-	//// error
-	//mux.HandleFunc("/err", err)
-	//
-	//// defined in route_auth.go
-	//mux.HandleFunc("/log-in", login)
-	//mux.HandleFunc("/log-out", loutout)
-	//mux.HandleFunc("/sign-up", signup)
-	//mux.HandleFunc("/sign-up-account", singupAccount)
-	//mux.HandleFunc("/authenticate", authenticate)
-	//
+	mux.HandleFunc("/", ctrl.Index)
+	mux.HandleFunc("/index", ctrl.Index)
+	// error
+	mux.HandleFunc("/err", ctrl.Err)
+
+	// defined in route_auth.go
+	mux.HandleFunc("/login", ctrl.Login)
+	mux.HandleFunc("/signup", ctrl.Signup)
+	mux.HandleFunc("/signupaccount", ctrl.SignupAccount)
+	mux.HandleFunc("/logout", ctrl.Logout)
+	mux.HandleFunc("/authenticate", ctrl.Authenticate)
+
 	//// defined in route_thread.go
-	//mux.HandleFunc("/thread/new", newThread)
-	//mux.HandleFunc("/thread/create", createThread)
-	//mux.HandleFunc("/thread/post", postThread)
-	//mux.HandleFunc("/thread/read", readThread)
+	mux.HandleFunc("/thread/new", ctrl.NewThread)
+	mux.HandleFunc("/thread/create", ctrl.CreateThread)
+	mux.HandleFunc("/thread/post", ctrl.PostThread)
+	mux.HandleFunc("/thread/read", ctrl.ReadThread)
 
 	// starting up the server
 	server := &http.Server{
